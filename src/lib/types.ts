@@ -34,3 +34,8 @@ export interface Performer extends Contactable{
 export interface Character extends Contactable{
     performer?: Character | Performer
 }
+
+export interface Maker extends Contactable {
+    tags?: string[],
+    is?: Contactable
+}

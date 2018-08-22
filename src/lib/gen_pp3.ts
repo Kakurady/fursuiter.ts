@@ -1,4 +1,4 @@
-import { SiteName, Contactable, Character } from "./types";
+import { SiteName, Contactable, Character, Maker } from "./types";
 import { sites } from "./sites";
 
 function get_url_for_desc(someone: Contactable): string | undefined {
@@ -30,7 +30,11 @@ function get_url_for_desc(someone: Contactable): string | undefined {
 }
 
 function gen_attributions(character: Character): string {
-    function get_credit_for_desc(someone: Contactable): string {
+    function get_credit_for_desc(someone: Contactable | string): string {
+        if (typeof someone === "string"){
+            return someone;
+        }
+
         const url = get_url_for_desc(someone);
         
         if (url){
@@ -46,5 +50,23 @@ function gen_attributions(character: Character): string {
         return `${performer_credit} as ${character_credit}`;
     } else {
         return character_credit;
+    }
+}
+
+function* get_maker_tags(maker: Maker | string): Iterator<string>{
+    if (typeof maker === "string"){
+        yield maker;
+        return;
+    }
+    if(!maker){ return; }
+    if (maker.name || maker.tags){
+        if (maker.name) { yield maker.name; }
+        if (maker.tags) {
+            for (const tag of maker.tags){
+                yield tag;
+            }
+        }
+    } else {
+        return;
     }
 }
