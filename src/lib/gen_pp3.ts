@@ -123,14 +123,15 @@ function get_tags(options: ProfileOptions): string[] {
 
 function gen_title(options: ProfileOptions): string {
     // create the headline (title)
-    var title;
+    var title:string;
     if (options.title) {
         title = options.title;
     } else {
+        // FIXME: did not check characters is defined? Either check here or remove undefined from definition
         const names = options.characters.map(x => x.name);
         title = names.join(", ");
     }
-    // TODO: add support for event titles
+    // Add event name to the title
     // possibilities: have characters / no characters, have event / no event
     if (options.event) {
         if (title) {
@@ -142,6 +143,10 @@ function gen_title(options: ProfileOptions): string {
     return title;
 }
 
+/**
+ * Create processing profile text body from a set of options.
+ * @param options 
+ */
 function gen_pp3(options: ProfileOptions) {
     const title = gen_title(options);
 
