@@ -27,15 +27,37 @@ export interface Contactable {
     stale?: SiteName[],
 };
 
-export interface Performer extends Contactable{
+export interface Performer extends Contactable {
 
 }
 
-export interface Character extends Contactable{
-    performer?: Character | Performer
+export interface Character extends Contactable {
+    gender?: "male" | "female" | string,
+    maker: Array<string | Maker>,
+    performer?: Character | Performer,
+    species?: Array<string | Species>,
+    tags?: string[],
 }
 
 export interface Maker extends Contactable {
     tags?: string[],
     is?: Contactable
+}
+
+export interface Species {
+    name?: string,
+    tags?: string[],
+}
+
+// FIXME: collides with DOM "Event" API
+export interface Event {
+    tags?: string[],
+    name?: string,
+}
+
+export interface ProfileOptions {
+    characters?: Character[],
+    event?: Event,
+    tags?: string[],
+    title?: string,
 }
