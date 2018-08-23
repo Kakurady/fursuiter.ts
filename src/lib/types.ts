@@ -53,10 +53,15 @@ export interface Species {
 export interface Event {
     tags?: string[],
     name?: string,
+    country?: string,
+    province?: string,
+    city?: string,
 }
 
 export interface ProfileOptions {
+    artist?: string,
     characters?: Character[],
+    copyright?: string,
     event?: Event,
     tags?: string[],
     title?: string,

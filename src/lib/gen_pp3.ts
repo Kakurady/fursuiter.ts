@@ -152,4 +152,44 @@ function gen_pp3(options: ProfileOptions) {
         .replace(/\n/g, "\\n");
 
     const tags = get_tags(options);
+
+    var lines: string[] = [];
+
+    lines.push("[Exif]");
+    lines.push("Exif.MakerNote=#delete");
+    if (options.artist) {
+        lines.push(`Artist=${options.artist}`);
+    }
+    if (options.copyright) {
+        lines.push(`Copyright=${options.copyright}`);
+    }
+    lines.push(`ImageDescription=#delete`);
+    lines.push("");
+
+    lines.push(`[IPTC]
+Caption=${description};
+Headline=${title};
+Keywords=${tags.join(";")};`);
+
+    if (options.artist) {
+        lines.push(`Author=${options.artist}`);
+    }
+    if (options.copyright) {
+        lines.push(`Copyright=${options.copyright}`);
+    }
+    if (options.event) {
+        if (options.event.country) {
+            lines.push(`Country=${options.event.country}`);
+        }
+        if (options.event.province) {
+            lines.push(`Province=${options.event.province}`);
+        }
+        if (options.event.city) {
+            lines.push(`City=${options.event.city}`);
+        }
+    }
+
+    return { title, tags, description, text: lines.join("\n") };
 }
+
+export default gen_pp3;
