@@ -1,10 +1,11 @@
-import { Event, Character, Performer, Species, Maker } from "./types";
+import { Event, Character, Performer, Species, MakerRecord } from "./types";
 
 import { readFile } from "fs";
 import { promisify } from "util";
 
 const readFileAsync = promisify(readFile);
 
+//TODO: Change file name to lower case for all other than loadMaker. Also validate names
 export default class FileSystemDataSource {
     dataPath: string;
 
@@ -50,7 +51,7 @@ export default class FileSystemDataSource {
     }
 
     // FIXME can name input be trusted here?
-    async loadMaker(name: string): Promise<Maker | string> {
+    async loadMaker(name: string): Promise<MakerRecord | string> {
         try {
             // most makers don't have data, so just return as-is later,
             // but if data is later added it won't be found, so change to lowercase.

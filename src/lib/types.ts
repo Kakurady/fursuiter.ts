@@ -31,6 +31,7 @@ export interface Performer extends Contactable {
 
 }
 
+// maker and performer can be fully formed structures, a reference to one, or freeform string.
 export interface Character extends Contactable {
     gender?: "male" | "female" | string,
     maker?: Array<string | Maker>,
@@ -38,16 +39,18 @@ export interface Character extends Contactable {
     species?: Array<string | Species>,
     tags?: string[],
 }
-type CharacterRecord = {
-    [K in keyof Character]: K extends "maker" | "performer" | "species" ? string : Character[K]
-}
+// export type CharacterRecord = {
+//     [K in keyof Character]: K extends "maker" | "performer" | "species" ? string : Character[K]
+// }
 
+// "is" must refer to an actual Character/Maker/Performer.
 export interface Maker extends Contactable {
     tags?: string[],
     is?: Contactable
 }
-type MakerRecord = {
-    [K in keyof Maker]: K extends "is"? string : Maker[K]
+// however, it's allowed to include a whole Character/Performer object in JSON
+export type MakerRecord = {
+    [K in keyof Maker]: K extends "is"? string | Maker[K] : Maker[K]
 }
 
 export interface Species {
