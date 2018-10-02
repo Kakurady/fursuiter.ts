@@ -33,15 +33,21 @@ export interface Performer extends Contactable {
 
 export interface Character extends Contactable {
     gender?: "male" | "female" | string,
-    maker: Array<string | Maker>,
+    maker?: Array<string | Maker>,
     performer?: Character | Performer,
     species?: Array<string | Species>,
     tags?: string[],
+}
+type CharacterRecord = {
+    [K in keyof Character]: K extends "maker" | "performer" | "species" ? string : Character[K]
 }
 
 export interface Maker extends Contactable {
     tags?: string[],
     is?: Contactable
+}
+type MakerRecord = {
+    [K in keyof Maker]: K extends "is"? string : Maker[K]
 }
 
 export interface Species {
