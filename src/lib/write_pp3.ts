@@ -34,12 +34,17 @@ async function create_subfolders(base: string, ...paths: string[]) {
             }
         }
     }
-    // recursively create subdirectories. 
-    // "base + path[0, length)" should exist now, so add 1 to length
-    for (length++; length <= paths.length; length++) {
-        let dirname = pathjoin(base, ...paths.slice(0, length));
-        await mkdirAsync(dirname);
+    try {
+        // recursively create subdirectories. 
+        // "base + path[0, length)" should exist now, so add 1 to length
+        for (length++; length <= paths.length; length++) {
+            let dirname = pathjoin(base, ...paths.slice(0, length));
+            await mkdirAsync(dirname);
+        }
+    } catch (error) {
+        throw error;
     }
+
 }
 
 /**
@@ -88,6 +93,11 @@ export default async function write_pp3(profilePath: string, filename: string, e
         }
     }
 
-    await writeFileAsync(fd, text);
-    await closeAsync(fd);
+    try {
+        await writeFileAsync(fd, text);
+        await closeAsync(fd);
+    } catch (error) {
+        throw error;
+    }
+
 }
