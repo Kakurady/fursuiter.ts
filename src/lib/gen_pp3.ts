@@ -151,7 +151,7 @@ function gen_profile_filename(options: ProfileOptions): string{
     } else if (working_title.length == 0){
         working_title.push(options.event.name);
     }
-    return working_title.map(x=>x.replace(punct, "_").toLowerCase).join("_");
+    return working_title.map(x=>x.replace(punct, "_").toLowerCase()).join("_");
 }
 
 /**

@@ -166,7 +166,7 @@ async function init() {
                     } else if (event_name){
                         event = await ds.loadEvent(event_name);
                     }
-                    const _options = {resolvedCharacters, ...options, event};
+                    const _options = {characters: resolvedCharacters, ...options, event};
         
                     return gen_pp3(_options);
                 } catch (error) {
@@ -177,7 +177,7 @@ async function init() {
             function conv(characters: characterKeyOrObject | Array<characterKeyOrObject>, event_name?: string|ProfileOptionsRecord, options?: ProfileOptionsRecord){
                 const _characters = (characters instanceof Array)? characters : [characters];
                 const _event_name: string = (typeof event_name === 'string')? event_name: null;
-                const _options = options || (typeof event_name === 'string')? {} : event_name;
+                const _options = options || (typeof event_name === 'string')? {} : event_name || {};
 
                 return _conv(_characters, _event_name, _options);
             }
@@ -261,7 +261,7 @@ async function init() {
                 }
 
             }
-            return { readConfig, conv, resolveCharacter, convAndWrite, readProfileScript, writeProfilesFromScript };
+            return { ds, readConfig, conv, resolveCharacter, convAndWrite, readProfileScript, writeProfilesFromScript };
         }(ds, config.profilePath);
     } catch (error) {
         throw error;
