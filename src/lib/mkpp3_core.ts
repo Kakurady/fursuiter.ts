@@ -216,17 +216,20 @@ async function init() {
 
             type ProfileScript = {
                 label: string,
-                characters: (string| {key: string, performer:string})[]
+                characters: characterKeyOrObject[]
             }[];
             async function readProfileScript(filename: string): Promise<ProfileScript> {
                 try {
                     const readFileAsync = promisify(readFile);
                     const fileContents = await readFileAsync(filename, { encoding: "utf-8" });
-                    const lines = fileContents.split(/\n|\r\n/);
+                    let lines = fileContents.split(/\n|\r\n/);
+                    if (lines[lines.length - 1] == "") { 
+                        lines.pop(); 
+                    }
                     const profileList = lines.map(
                         /** @param line of the shape "label:character1,character2/performer,character3" */
                         line => {
-                            if (line[0] == "#") {return;}
+                            if (line[0] == "#") { return; }
                             const labelEnd = line.indexOf(":");
                             const label = labelEnd >= 0 && line.slice(0, labelEnd) || "";
                             /** rest of the line, without label */
