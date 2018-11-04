@@ -2,7 +2,7 @@ import FileSystemDataSource from "./FileSystemDataSource";
 import {join as pathjoin, dirname} from "path";
 import { DataSource, Performer, Character, CharacterRecord, Event, Maker, MakerRecord, SiteName, Species, ProfileOptionsRecord } from "./types";
 import gen_pp3 from "./gen_pp3";
-import { readFile, promises, readFileSync } from "fs";
+import { readFile } from "fs";
 import write_pp3 from "./write_pp3";
 import { promisify } from "util";
 
@@ -132,9 +132,16 @@ async function resolveCharacter(ds: DataSource, character_key_or_object: charact
 
 async function readConfig() {
     try {
-        let filename = pathjoin(dirname(process.argv[1]), "..", "config.json");
+        const readFileAsync = promisify(readFile);
 
-        return {dataPath: 'dummy', profilePath: "foo"};
+        const filename = pathjoin(dirname(process.argv[1]), "..", "config.json");
+        const fileContents = await readFileAsync(filename, { encoding: "utf-8" });
+
+        const config = JSON.parse(fileContents);
+        let dataPath: string;
+        let profilePath: string;
+        ({dataPath, profilePath} = config);
+        return {dataPath, profilePath};
     } catch (error) {
         throw error;
     }
@@ -144,8 +151,6 @@ async function init() {
     try {
         let config = await readConfig();
         let ds:DataSource = new FileSystemDataSource(config.dataPath);
-
-
 
         return function _c(ds: DataSource, profilePath: string) {
             async function _conv(characters: Array<characterKeyOrObject>, event_name: string, options: ProfileOptionsRecord) {
@@ -209,13 +214,14 @@ async function init() {
                 }
             }
 
-            type profileScript = {
+            type ProfileScript = {
                 label: string,
                 characters: (string| {key: string, performer:string})[]
             }[];
-            function readProfileScript(filename: string): profileScript {
+            async function readProfileScript(filename: string): Promise<ProfileScript> {
                 try {
-                    const fileContents = readFileSync(filename, { encoding: "utf-8" });
+                    const readFileAsync = promisify(readFile);
+                    const fileContents = await readFileAsync(filename, { encoding: "utf-8" });
                     const lines = fileContents.split(/\n|\r\n/);
                     const profileList = lines.map(
                         /** @param line of the shape "label:character1,character2/performer,character3" */
@@ -245,12 +251,17 @@ async function init() {
                 }
             }
 
-            async function writeProfilesFromScript(profileScript:profileScript | PromiseLike<profileScript>, event_name: string, options:ProfileOptionsRecord){
-                const _profileScript = await profileScript;
-                const res = _profileScript.map(x=>convAndWrite(x.characters, event_name, {...options, label: x.label}));
-                await Promise.all(res);
+            async function writeProfilesFromScript(profileScript:ProfileScript | PromiseLike<ProfileScript>, event_name: string, options:ProfileOptionsRecord){
+                try {
+                    const _profileScript = await profileScript;
+                    const res = _profileScript.map(x=>convAndWrite(x.characters, event_name, {...options, label: x.label}));
+                    await Promise.all(res);                    
+                } catch (error) {
+                    throw error;
+                }
+
             }
-            return { conv, resolveCharacter, convAndWrite, readProfileScript, writeProfilesFromScript };
+            return { readConfig, conv, resolveCharacter, convAndWrite, readProfileScript, writeProfilesFromScript };
         }(ds, config.profilePath);
     } catch (error) {
         throw error;
