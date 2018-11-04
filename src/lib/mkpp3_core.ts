@@ -2,8 +2,9 @@ import FileSystemDataSource from "./FileSystemDataSource";
 import {join as pathjoin, dirname} from "path";
 import { DataSource, Performer, Character, CharacterRecord, Event, Maker, MakerRecord, SiteName, Species, ProfileOptionsRecord } from "./types";
 import gen_pp3 from "./gen_pp3";
-import { write } from "fs";
+import { readFile, promises, readFileSync } from "fs";
 import write_pp3 from "./write_pp3";
+import { promisify } from "util";
 
 
 
@@ -207,7 +208,49 @@ async function init() {
                     throw error;
                 }
             }
-            return { conv, resolveCharacter, convAndWrite };
+
+            type profileScript = {
+                label: string,
+                characters: (string| {key: string, performer:string})[]
+            }[];
+            function readProfileScript(filename: string): profileScript {
+                try {
+                    const fileContents = readFileSync(filename, { encoding: "utf-8" });
+                    const lines = fileContents.split(/\n|\r\n/);
+                    const profileList = lines.map(
+                        /** @param line of the shape "label:character1,character2/performer,character3" */
+                        line => {
+                            if (line[0] == "#") {return;}
+                            const labelEnd = line.indexOf(":");
+                            const label = labelEnd >= 0 && line.slice(0, labelEnd) || "";
+                            /** rest of the line, without label */
+                            const noLabel = (labelEnd >= 0)? line.slice(labelEnd + 1) : line;
+                            
+                            const names = noLabel.split(",");
+                            const characters = names.map(
+                                /** @param name of the shape "character name", or "character name/performer name" */
+                                name => {
+                                    const [key, performer] = name.split("/");
+                                    if (performer) {
+                                        return { key, performer };
+                                    } else {
+                                        return key;
+                                    }
+                                });
+                            return {label, characters};
+                        });
+                    return profileList.filter(x=>!!x);
+                } catch (error) {
+                    throw error;
+                }
+            }
+
+            async function writeProfilesFromScript(profileScript:profileScript | PromiseLike<profileScript>, event_name: string, options:ProfileOptionsRecord){
+                const _profileScript = await profileScript;
+                const res = _profileScript.map(x=>convAndWrite(x.characters, event_name, {...options, label: x.label}));
+                await Promise.all(res);
+            }
+            return { conv, resolveCharacter, convAndWrite, readProfileScript, writeProfilesFromScript };
         }(ds, config.profilePath);
     } catch (error) {
         throw error;
