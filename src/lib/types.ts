@@ -39,9 +39,9 @@ export interface Character extends Contactable {
     species?: Array<string | Species>,
     tags?: string[],
 }
-// export type CharacterRecord = {
-//     [K in keyof Character]: K extends "maker" | "performer" | "species" ? string : Character[K]
-// }
+export type CharacterRecord = {
+    [K in keyof Character]: K extends "performer" ? string | Character[K] : Character[K]
+}
 
 // "is" must refer to an actual Character/Maker/Performer.
 export interface Maker extends Contactable {
