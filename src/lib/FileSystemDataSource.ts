@@ -1,4 +1,4 @@
-import { Event, Character, Performer, Species, MakerRecord } from "./types";
+import { Event, Character, Performer, Species, MakerRecord, DataSource } from "./types";
 
 import { readFile } from "fs";
 import { promisify } from "util";
@@ -6,7 +6,7 @@ import { promisify } from "util";
 const readFileAsync = promisify(readFile);
 
 //TODO: Change file name to lower case for all other than loadMaker. Also validate names
-export default class FileSystemDataSource {
+export default class FileSystemDataSource implements DataSource {
     dataPath: string;
 
     /**

@@ -75,3 +75,11 @@ export interface ProfileOptions {
     tags?: string[],
     title?: string,
 }
+
+export interface DataSource {
+    loadCharacter(name: string): Promise<Character | null>,
+    loadPerformer(name: string): Promise<Performer | null>,
+    loadMaker(name: string): Promise<MakerRecord | string>,
+    loadSpecies(name: string): Promise<Species | string>,
+    loadEvent(name: string): Promise<Event>,
+}
