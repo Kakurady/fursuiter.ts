@@ -72,6 +72,7 @@ export interface ProfileOptions {
     characters?: Character[],
     copyright?: string,
     event?: Event,
+    label?: string,
     tags?: string[],
     title?: string,
 }

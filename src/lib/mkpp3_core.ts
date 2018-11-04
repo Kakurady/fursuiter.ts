@@ -2,6 +2,8 @@ import FileSystemDataSource from "./FileSystemDataSource";
 import {join as pathjoin, dirname} from "path";
 import { DataSource, Performer, Character, CharacterRecord, Event, Maker, MakerRecord, SiteName, Species, ProfileOptionsRecord } from "./types";
 import gen_pp3 from "./gen_pp3";
+import { write } from "fs";
+import write_pp3 from "./write_pp3";
 
 
 
@@ -132,7 +134,7 @@ async function init() {
             return gen_pp3(_options);
         }
         
-        function conv(characters: characterKeyOrObject | Array<characterKeyOrObject>, event_name?: string|ProfileOptionsRecord, options?: string|ProfileOptionsRecord){
+        function conv(characters: characterKeyOrObject | Array<characterKeyOrObject>, event_name?: string|ProfileOptionsRecord, options?: ProfileOptionsRecord){
             const _characters = (characters instanceof Array)? characters : [characters];
             const _event_name: string = (typeof event_name === 'string')? event_name: null;
             const _options = options || (typeof event_name === 'string')? {} : event_name;
@@ -140,7 +142,38 @@ async function init() {
             return _conv(_characters, _event_name, _options);
         }
 
-        return { conv, resolveCharacter };
+        async function convAndWrite(characters: characterKeyOrObject | Array<characterKeyOrObject>, event_name?: string|ProfileOptionsRecord, options?: ProfileOptionsRecord){
+            try {
+                function extractEventName(): string{
+                    function extractEventNameFromProfileOptions(o: ProfileOptionsRecord): string{
+                        if (!o){
+                            return;
+                        }
+                        if (!o.event){
+                            return;
+                        }
+                        if (typeof o.event === 'string'){
+                            return o.event;
+                        } 
+                        return o.event.name;
+                    }
+                    if (!event_name) {
+                        return extractEventNameFromProfileOptions(options);
+                    }
+                    if (typeof event_name === 'string'){
+                        return event_name;
+                    }
+                    return extractEventNameFromProfileOptions(event_name);
+                }
+                const _event_name: string = extractEventName();
+    
+                const pp3 = await conv(characters, event_name, options);
+                return await write_pp3(profilePath, pp3.filename, _event_name, pp3.text);
+            } catch (error) {
+                throw error;
+            }
+        }
+        return { conv, resolveCharacter, convAndWrite };
     }(ds, config.profilePath);
 }
 

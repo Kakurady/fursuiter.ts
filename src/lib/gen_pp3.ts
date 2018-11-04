@@ -143,12 +143,24 @@ function gen_title(options: ProfileOptions): string {
     return title;
 }
 
+const punct = /[!-/:-@\[-`{-~]/g;
+function gen_profile_filename(options: ProfileOptions): string{
+    let working_title = options.characters ? options.characters.map(x=>x.name): [];
+    if (options.label) {
+        working_title.unshift(options.label);
+    } else if (working_title.length == 0){
+        working_title.push(options.event.name);
+    }
+    return working_title.map(x=>x.replace(punct, "_").toLowerCase).join("_");
+}
+
 /**
  * Create processing profile text body from a set of options.
  * @param options 
  */
 function gen_pp3(options: ProfileOptions) {
     const title = gen_title(options);
+    const filename = gen_profile_filename(options);
 
     const attributions = options.characters.map(gen_attributions);
     const description = attributions
@@ -194,7 +206,7 @@ Keywords=${tags.join(";")};`);
         }
     }
 
-    return { title, tags, description, text: lines.join("\n") };
+    return { filename, title, tags, description, text: lines.join("\n") };
 }
 
 export default gen_pp3;
