@@ -75,6 +75,9 @@ export interface ProfileOptions {
     tags?: string[],
     title?: string,
 }
+export type ProfileOptionsRecord = {
+    [K in keyof ProfileOptions]: K extends "event"? string | ProfileOptions[K] : ProfileOptions[K]
+}
 
 export interface DataSource {
     loadCharacter(name: string): Promise<Character | null>,

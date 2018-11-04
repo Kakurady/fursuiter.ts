@@ -1,15 +1,9 @@
 import FileSystemDataSource from "./FileSystemDataSource";
 import {join as pathjoin, dirname} from "path";
-import { DataSource, Performer, Character, CharacterRecord, Maker, MakerRecord, SiteName, Species } from "./types";
+import { DataSource, Performer, Character, CharacterRecord, Event, Maker, MakerRecord, SiteName, Species, ProfileOptionsRecord } from "./types";
+import gen_pp3 from "./gen_pp3";
 
-// need closure because writeProfilesFromList uses map
-function _closure(ds: FileSystemDataSource, profilePath: string) {
-    function convAndWrite() {
 
-    }
-
-    return { convAndWrite };
-}
 
 function resolvePerformer(ds: DataSource, performer: string | Performer): Promise<Performer>{
     if (typeof performer === "string"){
@@ -19,12 +13,6 @@ function resolvePerformer(ds: DataSource, performer: string | Performer): Promis
     }
 }
 
-type CharacterOptions = {
-    key?: string, 
-    id?: string, 
-    addTags?: string[],
-}
-
 // We don't actually care if the maker has a personal identity separate from their professional one.
 // in fact, it's better if we don't load the maker as a Contactable,
 // lest we end up with circular references.
@@ -32,7 +20,7 @@ async function resolveMaker (ds: DataSource, maker: string | Maker | MakerRecord
     const loaded = (typeof maker === "string") ? await ds.loadMaker(maker) : maker;
     if (typeof loaded === "string"){
         return loaded;
-    } else{
+    } else {
         const {name, abbr, stale, on, tags} = loaded;
         return {name, abbr, stale, on, tags};
     }
@@ -68,14 +56,20 @@ async function resolveSpecies(ds: DataSource, species?: string | Species | Array
     }
 }
 
-async function resolveCharacter(ds: DataSource, character_key_or_object: string | (CharacterRecord & CharacterOptions)): Promise<Character | null>{
+type CharacterOptions = {
+    key?: string, 
+    id?: string, 
+    addTags?: string[],
+}
+type characterKeyOrObject = string | (CharacterRecord & CharacterOptions);
+async function resolveCharacter(ds: DataSource, character_key_or_object: characterKeyOrObject): Promise<Character | null>{
     if (!character_key_or_object) {return null;}
 
     // `character` can be a key (indicating we want the data as-is)
     // or an object with some values; these values will override
     // what's loaded from disk
     const filename = (typeof character_key_or_object === "string")? character_key_or_object : character_key_or_object.key || character_key_or_object.id;
-    const options = (typeof character_key_or_object === "string")? {} : character_key_or_object; // to satisify typescript
+    const options = (typeof character_key_or_object === "string")? {} : character_key_or_object; // to satisify typescript, that options is not a string
     const record: CharacterRecord = await ds.loadCharacter(filename) || {name: filename};
     const is_fursuit = true;
 
@@ -113,11 +107,41 @@ async function resolveCharacter(ds: DataSource, character_key_or_object: string 
 
 async function readConfig() {
     let filename = pathjoin(dirname(process.argv[1]), "..", "config.json");
+
+    return {dataPath: 'dummy', profilePath: "foo"};
 }
 async function init() {
     let config = await readConfig();
+    let ds:DataSource = new FileSystemDataSource(config.dataPath);
 
-    return _closure(null, null);
+    return function _c(ds: DataSource, profilePath: string) {
+        async function _conv(characters: Array<characterKeyOrObject>, event_name: string, options: ProfileOptionsRecord) {
+            const resolvedCharacters = await Promise.all(characters.map(x=>resolveCharacter(ds, x)));
+            let event: Event;
+            if (options.event){
+                if (typeof options.event === 'string'){
+                    event = await ds.loadEvent(options.event);
+                } else {
+                    event = options.event;
+                }
+            } else if (event_name){
+                event = await ds.loadEvent(event_name);
+            }
+            const _options = {resolvedCharacters, ...options, event};
+
+            return gen_pp3(_options);
+        }
+        
+        function conv(characters: characterKeyOrObject | Array<characterKeyOrObject>, event_name?: string|ProfileOptionsRecord, options?: string|ProfileOptionsRecord){
+            const _characters = (characters instanceof Array)? characters : [characters];
+            const _event_name: string = (typeof event_name === 'string')? event_name: null;
+            const _options = options || (typeof event_name === 'string')? {} : event_name;
+
+            return _conv(_characters, _event_name, _options);
+        }
+
+        return { conv, resolveCharacter };
+    }(ds, config.profilePath);
 }
 
 export { init };
