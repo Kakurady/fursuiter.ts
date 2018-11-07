@@ -1,0 +1,30 @@
+{
+    "name":     "",
+    "gender":   null,
+    "species":  [""],
+    "maker":    [""],
+    "tags":     [""],
+    "on":
+    {
+        "da":       null,
+        "fa":       null,
+        "facebook": null,
+        "flickr":   null,
+        "furrynetwork":     null,
+        "inkbunny": null,
+        "instagram":null,
+        "instagram_url":    null,
+        "second_life":  null,
+        "second_life_uuid": null,
+        "sofurry":  null,
+        "telegram": null,
+        "tumblr":   null,
+        "twitter":  null,
+        "weasyl":   null,
+        "youtube":  null
+    },
+    "abbr": null,
+    "stale": [],
+    "performer": null,
+    "comments": null
+}

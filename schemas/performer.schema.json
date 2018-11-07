@@ -1,0 +1,79 @@
+{
+    "$schema":"http://json-schema.org/draft-07/schema",
+    "type":"object",
+    "properties": {
+        "name": {"type": "string"},
+        "on": {
+            "type": "object",
+            "properties": {
+                "da": {"type": "string"},
+                "fa": {"type": "string"},
+                "facebook": {"type": "string"},
+                "flickr": {"type": "string"},
+                "furrynetwork": {"type": "string"},
+                "inkbunny": {"type": "string"},
+                "instagram": {"type": "string"},
+                "instagram_url": {"type": "string"},
+                "ko-fi": {"type": "string"},
+                "livejournal": {"type": "string"},
+                "patreon": {"type": "string"},
+                "second_life": {"type": "string"},
+                "second_life_uuid": {"type": "string"},
+                "sofurry": {"type": "string"},
+                "telegram": {"type": "string"},
+                "tumblr": {"type": "string"},
+                "twitter": {"type": "string"},
+                "web": {"type": "string"},
+                "weasyl": {"type": "string"},
+                "youtube": {"type": "string"}
+            },
+            "propertyNames":{
+                "$ref": "#/definitions/serviceName"
+            }
+        },
+        "abbr": {
+            "$ref": "#/definitions/serviceBag"
+        },
+        "stale": {
+            "$ref": "#/definitions/serviceBag"
+        }
+    },
+    "definitions":{
+        "stringBag": {
+            "type": "array",
+            "items": {
+                "type": "string"
+            }
+        },
+        "serviceBag": {
+            "type": "array",
+            "items": {
+                "$ref": "#/definitions/serviceName"
+            }
+        },
+        "serviceName": {
+            "enum": [
+                "da",
+                "fa",
+                "facebook",
+                "flickr",
+                "furrynetwork",
+                "inkbunny",
+                "instagram",
+                "instagram_url",
+                "ko-fi",
+                "livejournal",
+                "patreon",
+                "second_life",
+                "second_life_uuid",
+                "sofurry",
+                "telegram",
+                "tumblr",
+                "twitter",
+                "weasyl",
+                "web",
+                "youtube"
+            ]
+        }
+    }
+}
