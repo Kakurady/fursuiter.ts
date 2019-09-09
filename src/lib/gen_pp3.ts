@@ -2,7 +2,8 @@ import { SiteName, Contactable, Character, Maker, ProfileOptions } from "./types
 import { sites } from "./sites";
 
 function get_url_for_desc(someone: Contactable): string | undefined {
-    const stale = new Set(someone.stale);
+    const stale = new Set(someone.stale || []);
+    if (!someone.on){ return; }
 
     const site_list: SiteName[] = [
         "web",
