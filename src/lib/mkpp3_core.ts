@@ -229,6 +229,36 @@ async function init() {
                 }
             }
 
+            /* query functions */
+            async function readAllCharacters(){
+                const characterList: string[] = await ds.listAllCharacters();
+                return await Promise.all(characterList.map(key => resolveCharacter(ds, key)));
+            }
+            async function findAllSpeciesAndTags(){
+                const maker_set: Set<string> = new Set();
+                const species_set: Set<string> = new Set();
+                const tags_set: Set<string> = new Set();
+
+                const characters = await readAllCharacters();
+                for (const character of characters) {
+                    for (const m of (character.maker || [])) {
+                        maker_set.add(typeof m === "string" ? m : m.name);
+                    }
+                    for (const s of (character.species || [])) {
+                        species_set.add(typeof s === "string" ? s : s.name);
+                    }
+                    for (const t of (character.tags || [])) {
+                        tags_set.add(t);
+                    }
+                }
+                
+                const makers = [...maker_set.values()].sort();
+                const species = [...species_set.values()].sort();
+                const tags = [...tags_set.values()].sort();
+
+                return {makers, species, tags};
+            }
+
             type ProfileScript = {
                 label: string,
                 characters: characterKeyOrObject[]
@@ -279,7 +309,17 @@ async function init() {
                 }
 
             }
-            return { ds, readConfig, conv, resolveCharacter, convAndWrite, readProfileScript, writeProfilesFromScript, resolvePerformer };
+            return { 
+                ds, 
+                readConfig, 
+                conv, 
+                resolveCharacter, 
+                convAndWrite, 
+                readProfileScript, 
+                writeProfilesFromScript, 
+                resolvePerformer,
+                findAllSpeciesAndTags,
+            };
         }(ds, config.profilePath);
     } catch (error) {
         throw error;
