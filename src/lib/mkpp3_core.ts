@@ -8,11 +8,11 @@ import { promisify } from "util";
 
 
 
-function resolvePerformer(ds: DataSource, performer: string | Performer): Promise<Performer>{
+async function resolvePerformer(ds: DataSource, performer: string | Performer): Promise<Performer>{
     if (typeof performer === "string"){
-        return ds.loadPerformer(performer) || ds.loadCharacter(performer);
+        return await ds.loadPerformer(performer) || await ds.loadCharacter(performer);
     } else {
-        return new Promise((resolve) => { resolve(performer) });
+        return performer;
     }
 }
 
@@ -264,7 +264,7 @@ async function init() {
                 }
 
             }
-            return { ds, readConfig, conv, resolveCharacter, convAndWrite, readProfileScript, writeProfilesFromScript };
+            return { ds, readConfig, conv, resolveCharacter, convAndWrite, readProfileScript, writeProfilesFromScript, resolvePerformer };
         }(ds, config.profilePath);
     } catch (error) {
         throw error;
