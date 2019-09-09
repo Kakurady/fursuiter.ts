@@ -1,9 +1,11 @@
 import { Event, Character, Performer, Species, MakerRecord, DataSource } from "./types";
 
-import { readFile } from "fs";
+import { readFile, readdir } from "fs";
 import { promisify } from "util";
+import { extname } from "path";
 
 const readFileAsync = promisify(readFile);
+const readdirAsync = promisify(readdir);
 
 //TODO: Change file name to lower case for all other than loadMaker. Also validate names
 export default class FileSystemDataSource implements DataSource {
@@ -107,5 +109,18 @@ export default class FileSystemDataSource implements DataSource {
                 throw e;
             }
         }
+    }
+
+    async listall(type: "fursuit" | "event" | "maker" | "performer" | "species"): Promise<string[]>{
+        try {
+            const files = await readdirAsync(`${this.dataPath}/${type}/`);
+            return files.filter(filename => extname(filename) == ".json").map(filename => filename.slice(0, -5));
+        } catch (e) {
+            throw e;
+        }        
+    }
+
+    listAllCharacters(): Promise<string[]> {
+        return this.listall("fursuit");
     }
 }

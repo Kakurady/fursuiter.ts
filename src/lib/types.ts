@@ -86,4 +86,6 @@ export interface DataSource {
     loadMaker(name: string): Promise<MakerRecord | string>,
     loadSpecies(name: string): Promise<Species | string>,
     loadEvent(name: string): Promise<Event>,
+
+    listAllCharacters(): Promise<string[]>
 }
