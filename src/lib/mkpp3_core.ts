@@ -182,7 +182,7 @@ async function init() {
                         event = await ds.loadEvent(event_name);
                     }
                     const _options = {characters: resolvedCharacters, ...options, event};
-        
+
                     return gen_pp3(_options);
                 } catch (error) {
                     throw error;
@@ -190,7 +190,7 @@ async function init() {
             }
             
             function conv(characters: characterKeyOrObject | Array<characterKeyOrObject>, event_name?: string|ProfileOptionsRecord, options?: ProfileOptionsRecord){
-                const _characters = (characters instanceof Array)? characters : [characters];
+                const _characters = (Array.isArray(characters))? characters : [characters];
                 const _event_name: string = (typeof event_name === 'string')? event_name: null;
                 const _options = options || (typeof event_name === 'string')? {} : event_name || {};
 
