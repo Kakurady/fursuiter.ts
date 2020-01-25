@@ -92,9 +92,24 @@ async function resolveCharacter(ds: DataSource, character_key_or_object: charact
         // what's loaded from disk
         const filename = (typeof character_key_or_object === "string")? character_key_or_object : character_key_or_object.key || character_key_or_object.id;
         const options = (typeof character_key_or_object === "string")? {} : character_key_or_object; // to satisify typescript, that options is not a string
-        const record: CharacterRecord = await ds.loadCharacter(filename) || {name: filename};
-        const is_fursuit = true;
-    
+        let is_fursuit = false;
+        const record: CharacterRecord = await (async () => {
+            const ret = await ds.loadCharacter(filename);
+            if (ret) {
+                is_fursuit = true; return ret;
+            }
+            const ret2 = await ds.loadPerformer(filename);
+            if (ret2) {
+                return ret2;
+            }
+            const ret3 = await ds.loadMaker(filename);
+            if (ret3 && typeof ret3 !== "string"){
+                return ret3;
+            }
+            console.warn(`cannot load ${filename}`);
+            return { name: `${filename} NOT FOUND` };
+        })();
+
         // to decide character and performer's contact info, we look at
         // if there's a performer override. 
         let originalPerformer : Character | Performer | undefined;
