@@ -94,6 +94,14 @@ async function resolveCharacter(ds: DataSource, character_key_or_object: charact
         const options = (typeof character_key_or_object === "string")? {} : character_key_or_object; // to satisify typescript, that options is not a string
         let is_fursuit = false;
         const record: CharacterRecord = await (async () => {
+            if (!filename){
+                if (options.name){
+                    console.info(`not loading data for ${options.name} - to specify a file to load, use the key or id attribute`);
+                } else {
+                    console.info("key or id attribute missing! using the options object as character info");
+                }
+                return {};
+            }
             const ret = await ds.loadCharacter(filename);
             if (ret) {
                 is_fursuit = true; return ret;
@@ -111,7 +119,7 @@ async function resolveCharacter(ds: DataSource, character_key_or_object: charact
         })();
 
         // to decide character and performer's contact info, we look at
-        // if there's a performer override. 
+    // if there's a performer override. 
         let originalPerformer : Character | Performer | undefined;
         if (options.performer){
             // if there is one, we will overwrite the original performer's info
@@ -120,7 +128,13 @@ async function resolveCharacter(ds: DataSource, character_key_or_object: charact
             if (!record.on && record.performer){
                 // However, if the character has no contact info, 
                 // we have to fall back to the original performer's info.
-                originalPerformer = await resolvePerformer(ds, record.performer);
+                originalPerformer = await (async () => {
+                    let ret = await resolvePerformer(ds, record.performer);
+                    if (!ret) {
+                        console.warn(`${filename}'s original performer ${record.performer} not found`);
+                    }
+                    return ret;
+                })();
             }
         }
         // assemble the character from parts.
@@ -134,7 +148,16 @@ async function resolveCharacter(ds: DataSource, character_key_or_object: charact
         // Parts of Character: gender, maker, performer, species, tags
         const gender = options.gender || record.gender;
         const maker = await resolveMakers(ds, options.maker || record.maker);
-        const performer: Character | Performer = await resolvePerformer(ds, options.performer || record.performer);
+        const performer: Character | Performer = await (async (performer) => {
+            if (!performer){
+                return null;
+            }
+            let ret = await resolvePerformer(ds, performer);
+            if (!ret) {
+                console.warn(`performer ${performer} not found`);
+            }
+            return ret;
+        })(options.performer || record.performer);
         const species = await resolveSpecies(ds, options.species || record.species);
         const tags = [... (options.tags || record.tags || []), ...(options.addTags || [])];
         if (is_fursuit) {tags.push("fursuit")};
