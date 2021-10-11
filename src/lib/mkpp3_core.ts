@@ -206,7 +206,8 @@ async function init() {
                     }
                     const _options = {characters: resolvedCharacters, ...options, event};
 
-                    return gen_pp3(_options);
+                    let ret =  gen_pp3(_options);
+                    return ret;
                 } catch (error) {
                     throw error;
                 }
@@ -224,11 +225,16 @@ async function init() {
                 return o.event.name;
             }
 
-            
-            function conv(characters: characterKeyOrObject | Array<characterKeyOrObject>, event_name?: string|ProfileOptionsRecord, options?: ProfileOptionsRecord){
+
+            function conv(characters: characterKeyOrObject | Array<characterKeyOrObject>, event_name_or_options?: string|ProfileOptionsRecord, options?: ProfileOptionsRecord){
                 const _characters = (Array.isArray(characters))? characters : [characters];
-                const _event_name: string = (typeof event_name === 'string')? event_name: null;
-                const _options = options || (typeof event_name === 'string')? {} : event_name || {};
+                const _event_name: string = (typeof event_name_or_options === 'string')? event_name_or_options: null;
+                const _options = (() => {
+                    if (options) { return options; }
+                    if (typeof event_name_or_options === 'string') { return {}; }
+                    if (event_name_or_options) { return event_name_or_options; }
+                    return {};
+                })();
 
                 return _conv(_characters, _event_name, _options);
             }
@@ -247,6 +253,7 @@ async function init() {
                     const _event_name: string = extractEventName();
         
                     const pp3 = await conv(characters, event_name, options);
+                    console.log(pp3);
                     return await write_pp3(profilePath, pp3.filename, _event_name, pp3.text);
                 } catch (error) {
                     throw error;
