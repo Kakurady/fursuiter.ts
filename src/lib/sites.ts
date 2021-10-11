@@ -12,7 +12,7 @@ const sites: { [k in SiteName]?: siteOps }
         toURLstr: x => `https://inkbunny.net/${x}`
     },
     "weasyl": {
-        nameToSlug: x => x.replace(/\./g, "").toLowerCase(), 
+        nameToSlug: x => x.replace(/\. /g, "").toLowerCase(), 
         toURLstr: x => `https://www.weasyl.com/~${x}`
     },
     "twitter": {
