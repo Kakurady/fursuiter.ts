@@ -211,6 +211,19 @@ async function init() {
                     throw error;
                 }
             }
+            function extractEventNameFromProfileOptions(o: ProfileOptionsRecord): string{
+                if (!o){
+                    return;
+                }
+                if (!o.event){
+                    return;
+                }
+                if (typeof o.event === 'string'){
+                    return o.event;
+                }
+                return o.event.name;
+            }
+
             
             function conv(characters: characterKeyOrObject | Array<characterKeyOrObject>, event_name?: string|ProfileOptionsRecord, options?: ProfileOptionsRecord){
                 const _characters = (Array.isArray(characters))? characters : [characters];
@@ -222,18 +235,6 @@ async function init() {
 
             async function convAndWrite(characters: characterKeyOrObject | Array<characterKeyOrObject>, event_name?: string|ProfileOptionsRecord, options?: ProfileOptionsRecord){
                 function extractEventName(): string{
-                    function extractEventNameFromProfileOptions(o: ProfileOptionsRecord): string{
-                        if (!o){
-                            return;
-                        }
-                        if (!o.event){
-                            return;
-                        }
-                        if (typeof o.event === 'string'){
-                            return o.event;
-                        } 
-                        return o.event.name;
-                    }
                     if (!event_name) {
                         return extractEventNameFromProfileOptions(options);
                     }
