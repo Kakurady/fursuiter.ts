@@ -361,28 +361,38 @@ async function init() {
 
         // list of profile names to simplify typing
         let characters:Strstrobj = {};
+        let performers:Strstrobj = {};
 
-        async function updateEntries()
+        async function updateEntries(obj: Strstrobj, type: "maker" | "performer" | "fursuit" | "event")
         {
-            for (const item of await ds.listall("fursuit"))
+            for (const item of await ds.listall(type))
             {
-                characters[item] = item;
+                obj[item] = item;
             }
         }
-        await updateEntries();
+
+        async function updateAllEntries()
+        {
+            await updateEntries(characters, "fursuit");
+            await updateEntries(performers, "performer");
+        }
+        await updateAllEntries();
         // short names for exported items
         let c = characters;
         return {
             ...context,
             characters,
             fursuits: characters,
+            performers,
             updateEntries,
+            updateAllEntries,
 
             // typing aids
             c,
             f: characters,
+            p: performers,
             w: context.convAndWrite,
-            up: updateEntries
+            up: updateAllEntries
         };
     } catch (error) {
         throw error;
