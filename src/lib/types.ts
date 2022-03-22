@@ -80,6 +80,8 @@ export type ProfileOptionsRecord = {
     [K in keyof ProfileOptions]: K extends "event"? string | ProfileOptions[K] : ProfileOptions[K]
 }
 
+export type changeCallbackFuncType = ((eventType: "rename" | "change", filename: string | Buffer) => void) | undefined;
+
 export interface DataSource {
     loadCharacter(name: string): Promise<Character | null>,
     loadPerformer(name: string): Promise<Performer | null>,
@@ -88,7 +90,16 @@ export interface DataSource {
     loadEvent(name: string): Promise<Event>,
 
     listall(type: "fursuit" | "event" | "maker" | "performer" | "species"): Promise<string[]>,
-    listAllCharacters(): Promise<string[]>
+    listAllCharacters(): Promise<string[]>,
+
+    /**
+     * watch for data source changes.
+     *
+     * implementation note: this calls fs.watch() each time it's called. ok for now because this is only called once.
+     * should be fixed before we support multiple callbacks.
+     * @param callback
+     */
+    watchChanges(callback: changeCallbackFuncType): void
 }
 
 export type Strstrobj = {

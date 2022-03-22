@@ -1,15 +1,19 @@
-import { Event, Character, Performer, Species, MakerRecord, DataSource } from "./types";
+import { Event, Character, Performer, Species, MakerRecord, DataSource, changeCallbackFuncType } from "./types";
 
-import { readFile, readdir } from "fs";
+import { readFile, readdir, watch } from "fs";
 import { promisify } from "util";
 import { extname } from "path";
 
 const readFileAsync = promisify(readFile);
 const readdirAsync = promisify(readdir);
 
+export type DataSourceOptionType  = {changeCallback: changeCallbackFuncType};
+
+
 //TODO: Change file name to lower case for all other than loadMaker. Also validate names
 export default class FileSystemDataSource implements DataSource {
     dataPath: string;
+    changeCallback : changeCallbackFuncType;
 
     /**
      *
@@ -122,5 +126,12 @@ export default class FileSystemDataSource implements DataSource {
 
     listAllCharacters(): Promise<string[]> {
         return this.listall("fursuit");
+    }
+
+    watchChanges(callback: changeCallbackFuncType) {
+        // TODO: handle errors / watch not supported
+        // TODO: support multiple callbacks without calling fs.watch each time
+        watch(`${this.dataPath}/fursuit/`, { persistent: false }, callback);
+        watch(`${this.dataPath}/performer/`, { persistent: false }, callback);
     }
 }

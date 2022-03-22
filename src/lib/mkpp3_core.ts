@@ -178,8 +178,9 @@ async function readConfig() {
         const config = JSON.parse(fileContents);
         let dataPath: string;
         let profilePath: string;
-        ({dataPath, profilePath} = config);
-        return {dataPath, profilePath};
+        let editor: string | undefined;
+        ({dataPath, profilePath, editor} = config);
+        return {dataPath, profilePath, editor};
     } catch (error) {
         throw error;
     }
@@ -187,6 +188,7 @@ async function readConfig() {
 }
 async function init() {
     try {
+
         let config = await readConfig();
         let ds:DataSource = new FileSystemDataSource(config.dataPath);
 
@@ -363,22 +365,43 @@ async function init() {
         let characters:Strstrobj = {};
         let performers:Strstrobj = {};
 
-        async function updateEntries(obj: Strstrobj, type: "maker" | "performer" | "fursuit" | "event")
-        {
-            for (const item of await ds.listall(type))
-            {
+        // TODO: explain this function
+        async function updateEntries(obj: Strstrobj, type: "maker" | "performer" | "fursuit" | "event") {
+            // TODO: handle errors
+            let entries = await ds.listall(type);
+
+            // clear the object
+            // only clear the object after the async operation. This is because in watch mode, if we cleared the object first then call listall(), the object might be empty while we wait
+            for (const key in entries) {
+                if (obj.hasOwnProperty(key)) {
+                    delete obj.key;
+                }
+            }
+
+            // assign entries
+            for (const item of entries) {
                 obj[item] = item;
             }
         }
 
-        async function updateAllEntries()
-        {
-            await updateEntries(characters, "fursuit");
-            await updateEntries(performers, "performer");
+        async function updateAllEntries() {
+            // TODO: handle errors
+            await Promise.all([
+                updateEntries(characters, "fursuit"),
+                updateEntries(performers, "performer")
+            ]);
         }
         await updateAllEntries();
+
+        // TODO: handle errors
+        ds.watchChanges((eventType, filename) => { if (eventType === "rename") { updateAllEntries(); } });
         // short names for exported items
-        let c = characters;
+        console.log("Frequently used objects and functions: \n");
+        console.log("Character & performer list (live updates): fursuits (f), performers (p)");
+        console.log("(To inspect character/performer, use ds.loadCharacter or ds.loadPerformer)");
+        console.log("Write profile to file system: await convAndWrite() ( await w() )");
+        console.log("Maintenance: findAllSpeciesAndTags");
+        // console.log("Debug: ds");
         return {
             ...context,
             characters,
@@ -388,7 +411,7 @@ async function init() {
             updateAllEntries,
 
             // typing aids
-            c,
+            c: characters,
             f: characters,
             p: performers,
             w: context.convAndWrite,
