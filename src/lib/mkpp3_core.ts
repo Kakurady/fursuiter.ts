@@ -1,6 +1,6 @@
 import FileSystemDataSource from "./FileSystemDataSource";
 import {join as pathjoin, dirname} from "path";
-import { DataSource, Performer, Character, CharacterRecord, Event, Maker, MakerRecord, SiteName, Species, ProfileOptionsRecord } from "./types";
+import { DataSource, Performer, Character, CharacterRecord, Event, Maker, MakerRecord, SiteName, Species, ProfileOptionsRecord, Strstrobj } from "./types";
 import gen_pp3 from "./gen_pp3";
 import { readFile } from "fs";
 import write_pp3 from "./write_pp3";
@@ -190,7 +190,7 @@ async function init() {
         let config = await readConfig();
         let ds:DataSource = new FileSystemDataSource(config.dataPath);
 
-        return function _c(ds: DataSource, profilePath: string) {
+        let context = function _c(ds: DataSource, profilePath: string) {
             async function _conv(characters: Array<characterKeyOrObject>, event_name: string, options: ProfileOptionsRecord) {
                 try {
                     const resolvedCharacters = await Promise.all(characters.map(x=>resolveCharacter(ds, x)));
@@ -340,18 +340,50 @@ async function init() {
                 }
 
             }
-            return { 
-                ds, 
-                readConfig, 
-                conv, 
-                resolveCharacter, 
-                convAndWrite, 
-                readProfileScript, 
-                writeProfilesFromScript, 
-                resolvePerformer,
+
+            return {
+                // tagging
+                conv,
+                convAndWrite,
+                // tagging (batch)
+                readProfileScript,
+                writeProfilesFromScript,
+
+                // maintenance
                 findAllSpeciesAndTags,
+                // debug
+                resolveCharacter,
+                resolvePerformer,
+                ds,
+                readConfig
             };
         }(ds, config.profilePath);
+
+        // list of profile names to simplify typing
+        let characters:Strstrobj = {};
+
+        async function updateEntries()
+        {
+            for (const item of await ds.listall("fursuit"))
+            {
+                characters[item] = item;
+            }
+        }
+        await updateEntries();
+        // short names for exported items
+        let c = characters;
+        return {
+            ...context,
+            characters,
+            fursuits: characters,
+            updateEntries,
+
+            // typing aids
+            c,
+            f: characters,
+            w: context.convAndWrite,
+            up: updateEntries
+        };
     } catch (error) {
         throw error;
     }

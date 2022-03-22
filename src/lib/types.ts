@@ -87,5 +87,10 @@ export interface DataSource {
     loadSpecies(name: string): Promise<Species | string>,
     loadEvent(name: string): Promise<Event>,
 
+    listall(type: "fursuit" | "event" | "maker" | "performer" | "species"): Promise<string[]>,
     listAllCharacters(): Promise<string[]>
+}
+
+export type Strstrobj = {
+    [key: string]: string
 }
