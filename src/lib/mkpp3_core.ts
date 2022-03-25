@@ -2,9 +2,10 @@ import FileSystemDataSource from "./FileSystemDataSource";
 import {join as pathjoin, dirname} from "path";
 import { DataSource, Performer, Character, CharacterRecord, Event, Maker, MakerRecord, SiteName, Species, ProfileOptionsRecord, Strstrobj } from "./types";
 import gen_pp3 from "./gen_pp3";
-import { readFile } from "fs";
+import { readFile, copyFile, constants as fsconstants } from "fs";
 import write_pp3 from "./write_pp3";
 import { promisify } from "util";
+import { execFile } from "child_process";
 
 
 
@@ -178,9 +179,26 @@ async function readConfig() {
         const config = JSON.parse(fileContents);
         let dataPath: string;
         let profilePath: string;
-        let editor: string | undefined;
+        let editor: string | string[] | undefined;
         ({dataPath, profilePath, editor} = config);
-        return {dataPath, profilePath, editor};
+
+        // parse the "editor" parameter
+        let editorPath: string | undefined;
+        let editorArguments: string[] = [];
+        if (editor) {
+            let editorParsed: string[];
+            if (Array.isArray(editor))
+            {
+                editorParsed = editor;
+            }
+            else {
+                editorParsed = editor.split(" ");
+            }
+            editorPath = editorParsed[0];
+            editorArguments = editorParsed.slice(1);
+        }
+
+        return {dataPath, profilePath, editorPath, editorArguments};
     } catch (error) {
         throw error;
     }
@@ -192,7 +210,7 @@ async function init() {
         let config = await readConfig();
         let ds:DataSource = new FileSystemDataSource(config.dataPath);
 
-        let context = function _c(ds: DataSource, profilePath: string) {
+        let context = function _c(ds: DataSource, profilePath: string, dataPath? : string, editorPath?: string, editorArguments?: string[]) {
             async function _conv(characters: Array<characterKeyOrObject>, event_name: string, options: ProfileOptionsRecord) {
                 try {
                     const resolvedCharacters = await Promise.all(characters.map(x=>resolveCharacter(ds, x)));
@@ -343,6 +361,51 @@ async function init() {
 
             }
 
+            async function newEntry(type: "maker" | "performer" | "fursuit" | "event", key: string) {
+                if (!editorPath) {
+                    console.log(`"editor" not set in config`);
+                    return;
+                }
+                if (!dataPath) {
+                    console.log(`data path not set in config`);
+                    return;
+                }
+
+                const filePath = pathjoin(dataPath, type, `${key}.json`);
+                const templatePath = pathjoin(dataPath, type, `_${type}.example.json`);
+                const copyFileAsync = promisify(copyFile);
+
+                await copyFileAsync(templatePath, filePath, fsconstants.COPYFILE_EXCL);
+
+                const subprocess = execFile(editorPath, [...editorArguments, filePath]);
+                // drop all stdout
+                subprocess.stdout.on("data", (chunk) => { });
+                // accumulate stderr
+                let stderr = [];
+                subprocess.stderr.on("data", (chunk) => { stderr.push(chunk) });
+                subprocess.stderr.on("close", () => {
+                    if (stderr.length > 0) {
+                        console.log("editor error:", ...stderr);
+                    }
+                });
+
+                subprocess.on("exit", (code, signal) => {
+                    if (code == 0) { return; } // normal exit
+                    if (code == null) { console.log(`editor terminated by signal ${signal}`); return; }
+                    console.log(`editor exited with code ${code}`);
+                })
+            }
+
+            function newCharacter(key: string){
+                return newEntry("fursuit", key);
+            }
+            function newMaker(key: string){
+                return newEntry("maker", key);
+            }
+            function newPerformer(key: string){
+                return newEntry("performer", key);
+            }
+
             return {
                 // tagging
                 conv,
@@ -350,6 +413,11 @@ async function init() {
                 // tagging (batch)
                 readProfileScript,
                 writeProfilesFromScript,
+
+                newEntry,
+                newCharacter,
+                newPerformer,
+                newMaker,
 
                 // maintenance
                 findAllSpeciesAndTags,
@@ -359,7 +427,7 @@ async function init() {
                 ds,
                 readConfig
             };
-        }(ds, config.profilePath);
+        }(ds, config.profilePath, config.dataPath, config.editorPath, config.editorArguments);
 
         // list of profile names to simplify typing
         let characters:Strstrobj = {};
@@ -415,7 +483,13 @@ async function init() {
             f: characters,
             p: performers,
             w: context.convAndWrite,
-            up: updateAllEntries
+            up: updateAllEntries,
+
+            newFursuit: context.newCharacter,
+            nc: context.newCharacter,
+            nf: context.newCharacter,
+            nm: context.newMaker,
+            np: context.newPerformer,
         };
     } catch (error) {
         throw error;
