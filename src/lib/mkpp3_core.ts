@@ -396,13 +396,22 @@ async function init() {
                 })
             }
 
-            function newCharacter(key: string){
+            function newCharacter(key: string | string[]) {
+                if (Array.isArray(key)) {
+                    return newEntry("fursuit", key.join("_"));
+                }
                 return newEntry("fursuit", key);
             }
-            function newMaker(key: string){
+            function newMaker(key: string | string[]) {
+                if (Array.isArray(key)) {
+                    return newEntry("maker", key.join("_"));
+                }
                 return newEntry("maker", key);
             }
-            function newPerformer(key: string){
+            function newPerformer(key: string | string[]) {
+                if (Array.isArray(key)) {
+                    return newEntry("performer", key.join("_"));
+                }
                 return newEntry("performer", key);
             }
 
