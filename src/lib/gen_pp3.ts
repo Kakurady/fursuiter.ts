@@ -7,6 +7,8 @@ function get_url_for_desc(someone: Contactable): string | undefined {
 
     const site_list: SiteName[] = [
         "web",
+        "mastodon",
+        "misskey",
         "inkbunny",
         "weasyl",
         "twitter",

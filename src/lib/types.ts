@@ -9,6 +9,8 @@ export type SiteName =
     "instagram_url" |
     "ko-fi" |
     "livejournal" |
+    "mastodon" |
+    "misskey" |
     "patreon" |
     "second_life" |
     "second_life_uuid" |

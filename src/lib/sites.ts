@@ -5,6 +5,18 @@ type siteOps = {
     toURLstr: (slug: string) => string
 }
 
+function parseMastodonAtName(input: string)
+{
+    const re = /^@?([^@]+)@([^@]+)$/;
+    const res = re.exec(input);
+    if (!res){
+        throw new Error("unable to parse Mastodon/Misskey username");
+    }
+    const user = res[1];
+    const domain = res[2];
+    return `https://${domain}/@${user}`;
+}
+
 const sites: { [k in SiteName]?: siteOps }
     = {
     "inkbunny": {
@@ -26,6 +38,14 @@ const sites: { [k in SiteName]?: siteOps }
     "fa": {
         nameToSlug: x => x.replace(/_/g, ""),
         toURLstr: x => `https://www.furaffinity.net/user/${x}`
+    },
+    mastodon: {
+        nameToSlug: x => x,
+        toURLstr: parseMastodonAtName
+    },
+    misskey: {
+        nameToSlug: x => x,
+        toURLstr: parseMastodonAtName
     },
     tumblr: {
         nameToSlug: x => x,
