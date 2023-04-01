@@ -5,8 +5,10 @@ type siteOps = {
     toURLstr: (slug: string) => string
 }
 
-function parseMastodonAtName(input: string)
+function parseMastodonAtName(input: string): string
 {
+    // format: [@]user@domain
+    // user and domain may contain any character that is not @
     const re = /^@?([^@]+)@([^@]+)$/;
     const res = re.exec(input);
     if (!res){
