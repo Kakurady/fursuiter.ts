@@ -148,7 +148,7 @@ function gen_title(options: ProfileOptions): string {
 
 const punct = /[!-/:-@\[-`{-~]/g;
 function gen_profile_filename(options: ProfileOptions): string{
-    let working_title = options.characters ? options.characters.map(x=>x.name): [];
+    let working_title = options.characters ? options.characters.map(x=>x.key || x.name): [];
     if (options.label) {
         working_title.unshift(options.label);
     } else if (working_title.length == 0){

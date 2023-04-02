@@ -105,10 +105,11 @@ async function resolveCharacter(ds: DataSource, character_key_or_object: charact
             }
             const ret = await ds.loadCharacter(filename);
             if (ret) {
-                is_fursuit = true; return ret;
+                is_fursuit = true; ret.key = filename; return ret;
             }
             const ret2 = await ds.loadPerformer(filename);
             if (ret2) {
+                ret.key = filename;
                 return ret2;
             }
             const ret3 = await ds.loadMaker(filename);
@@ -141,6 +142,7 @@ async function resolveCharacter(ds: DataSource, character_key_or_object: charact
         // assemble the character from parts.
         // Parts of Contactable: name, on, abbr, stale
         const name = options.name || record.name || filename;
+        const key = record.key || name;
         const on: { [K in SiteName]?: string } = 
                         options.on ||   originalPerformer && (originalPerformer.on || {})   ||  record.on;
         const abbr =    options.abbr || originalPerformer && (originalPerformer.abbr || []) ||  record.abbr;
@@ -163,7 +165,7 @@ async function resolveCharacter(ds: DataSource, character_key_or_object: charact
         const tags = [... (options.tags || record.tags || []), ...(options.addTags || [])];
         if (is_fursuit) {tags.push("fursuit")};
     
-        return {name, on, abbr, stale, gender, maker, performer, species, tags};
+        return {name, key, on, abbr, stale, gender, maker, performer, species, tags};
     } catch (error) {
         throw error;
     }

@@ -23,6 +23,7 @@ export type SiteName =
     "youtube";
 
 export interface Contactable {
+    key?: string,
     name?: string,
     on?: { [K in SiteName]?: string },
     abbr?: SiteName[],
