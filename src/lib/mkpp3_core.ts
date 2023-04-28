@@ -103,18 +103,24 @@ async function resolveCharacter(ds: DataSource, character_key_or_object: charact
                 }
                 return {};
             }
-            const ret = await ds.loadCharacter(filename);
-            if (ret) {
-                is_fursuit = true; ret.key = filename; return ret;
+            {
+                const ret = await ds.loadCharacter(filename);
+                if (ret) {
+                    is_fursuit = true; ret.key = filename; return ret;
+                }
             }
-            const ret2 = await ds.loadPerformer(filename);
-            if (ret2) {
-                ret2.key = filename;
-                return ret2;
+            {
+                const ret2 = await ds.loadPerformer(filename);
+                if (ret2) {
+                    ret2.key = filename;
+                    return ret2;
+                }
             }
-            const ret3 = await ds.loadMaker(filename);
-            if (ret3 && typeof ret3 !== "string"){
-                return ret3;
+            {
+                const ret3 = await ds.loadMaker(filename);
+                if (ret3 && typeof ret3 !== "string") {
+                    return ret3;
+                }
             }
             console.warn(`cannot load ${filename}`);
             return { name: `${filename} NOT FOUND` };
