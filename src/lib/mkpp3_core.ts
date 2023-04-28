@@ -109,7 +109,7 @@ async function resolveCharacter(ds: DataSource, character_key_or_object: charact
             }
             const ret2 = await ds.loadPerformer(filename);
             if (ret2) {
-                ret.key = filename;
+                ret2.key = filename;
                 return ret2;
             }
             const ret3 = await ds.loadMaker(filename);
