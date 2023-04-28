@@ -402,6 +402,8 @@ async function init() {
                     if (code == null) { console.log(`editor terminated by signal ${signal}`); return; }
                     console.log(`editor exited with code ${code}`);
                 })
+
+                return key;
             }
 
             function newCharacter(key: string | string[]) {
