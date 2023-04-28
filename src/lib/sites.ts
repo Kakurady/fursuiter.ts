@@ -66,6 +66,10 @@ const sites: { [k in SiteName]?: siteOps }
         nameToSlug: x => x.replace(/ /g, ".").toLowerCase(),
         toURLstr: x=> `https://my.secondlife.com/${x}`,
     },
+    flickr: {
+        nameToSlug: x => x,
+        toURLstr: x => `https://www.flickr.com/people/${x}/`,
+    },
     web: {
         nameToSlug: x => x,
         toURLstr: x => x
