@@ -69,6 +69,11 @@ async function importFromConsole(){
             delete on[key];
         }
     }
+    if (performer && !character)
+    {
+        characterRecord.name = character;
+        delete characterRecord.performer;
+    }
 
     characterRecord.on = on;
     console.log(characterRecord);
