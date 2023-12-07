@@ -64,6 +64,12 @@ async function importFromConsole(){
         }
     });
     let on: { [K in SiteName]?: string } = {...on1, ...on2, ...on3, discord, fa, instagram, telegram, tiktok, twitter, web};
+    for (const key in on) {
+        if (on[key] == undefined) {
+            delete on[key];
+        }
+    }
+
     characterRecord.on = on;
     console.log(characterRecord);
 }
