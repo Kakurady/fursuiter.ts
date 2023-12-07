@@ -2,7 +2,8 @@ import { init } from "./lib/mkpp3_core";
 import {stdin, stdout, exit} from "process";
 import { CharacterRecord, SiteName } from "./lib/types";
 
-// const prompts = require("prompts");
+const prompts = require("prompts");
+const zxcvbn = require("zxcvbn");
 const readline = require("node:readline/promises");
 
 async function importFromConsole(){
@@ -77,6 +78,25 @@ async function importFromConsole(){
 
     characterRecord.on = on;
     console.log(characterRecord);
+
+    function getCandidateFilename()
+    {
+        let name_words = characterRecord.name.toLowerCase().normalize("NFKD").replace(/(\p{Diacritic}|[\-'&\?/])/gu, "").split(" ");
+        let entropy = zxcvbn(name_words[0]).guesses_log10;
+        if (entropy >= 5)
+        {
+            return name_words[0];
+        }
+        if (characterRecord.species[0] && typeof characterRecord.species[0] == "string")
+        {
+            let species = characterRecord.species[0].toLowerCase().normalize("NFKD").replace(/(\p{Diacritic}|[\-'&\?/])/gu, "").replace(/ /g, "_");
+            return `${name_words[0]}_${species}`;
+        }
+        return name_words.join("_");
+    }
+    let candidateFilename = getCandidateFilename();
+    let filename = await prompts([{name: "filename", type: "text", message: "Enter filename for character record: ", initial: candidateFilename}]);
+    console.log(filename);
 }
 
 async function main(){

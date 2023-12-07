@@ -7,6 +7,7 @@ import write_pp3 from "./write_pp3";
 import { promisify } from "util";
 import { execFile } from "child_process";
 
+const prompts = require("prompts");
 
 
 async function resolvePerformer(ds: DataSource, performer: string | Performer): Promise<Performer>{
