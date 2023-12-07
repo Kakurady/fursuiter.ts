@@ -10,7 +10,10 @@
         "on": {
             "type": "object",
             "properties": {
+                "bsky": {"type": "string"},
+                "cohost": {"type": "string"},
                 "da": {"type": "string"},
+                "discord": {"type": "string"},
                 "fa": {"type": "string"},
                 "facebook": {"type": "string"},
                 "flickr": {"type": "string"},
@@ -27,6 +30,8 @@
                 "second_life_uuid": {"type": "string"},
                 "sofurry": {"type": "string"},
                 "telegram": {"type": "string"},
+                "tiktok": {"type": "string"},
+                "threads": {"type": "string"},
                 "tumblr": {"type": "string"},
                 "twitter": {"type": "string"},
                 "web": {"type": "string"},
@@ -56,7 +61,10 @@
         },
         "serviceName": {
             "enum": [
+                "bsky",
+                "cohost",
                 "da",
+                "discord",
                 "fa",
                 "facebook",
                 "flickr",
@@ -73,6 +81,8 @@
                 "second_life_uuid",
                 "sofurry",
                 "telegram",
+                "tiktok",
+                "threads",
                 "tumblr",
                 "twitter",
                 "weasyl",

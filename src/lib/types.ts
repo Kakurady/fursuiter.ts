@@ -1,5 +1,8 @@
 export type SiteName =
+    "bsky" |
+    "cohost" |
     "da" |
+    "discord" |
     "fa" |
     "facebook" |
     "flickr" |
@@ -16,6 +19,8 @@ export type SiteName =
     "second_life_uuid" |
     "sofurry" |
     "telegram" |
+    "threads" |
+    "tiktok" |
     "tumblr" |
     "twitter" |
     "weasyl" |
