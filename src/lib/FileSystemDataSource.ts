@@ -1,11 +1,12 @@
-import { Event, Character, Performer, Species, MakerRecord, DataSource, changeCallbackFuncType } from "./types";
+import { Event, Character, Performer, Species, MakerRecord, DataSource, changeCallbackFuncType, CharacterRecord } from "./types";
 
-import { readFile, readdir, watch } from "fs";
+import { readFile, readdir, watch, writeFile } from "fs";
 import { promisify } from "util";
 import { extname } from "path";
 
 const readFileAsync = promisify(readFile);
 const readdirAsync = promisify(readdir);
+const writeFileAsync = promisify(writeFile);
 
 export type DataSourceOptionType  = {changeCallback: changeCallbackFuncType};
 
@@ -133,5 +134,18 @@ export default class FileSystemDataSource implements DataSource {
         // TODO: support multiple callbacks without calling fs.watch each time
         watch(`${this.dataPath}/fursuit/`, { persistent: false }, callback);
         watch(`${this.dataPath}/performer/`, { persistent: false }, callback);
+    }
+
+    async saveCharacter(name: string, data: CharacterRecord)
+    {
+        try {
+            const s = await writeFileAsync(
+                `${this.dataPath}/fursuit/${name}.json`,
+                JSON.stringify(data, null, "    "),
+                { encoding: "utf8", }
+            );
+        } catch (e) {
+            throw e;
+        }
     }
 }

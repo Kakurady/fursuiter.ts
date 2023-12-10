@@ -107,7 +107,9 @@ export interface DataSource {
      * should be fixed before we support multiple callbacks.
      * @param callback
      */
-    watchChanges(callback: changeCallbackFuncType): void
+    watchChanges(callback: changeCallbackFuncType): void,
+
+    saveCharacter(name: string, data: CharacterRecord): Promise<void>
 }
 
 export type Strstrobj = {
