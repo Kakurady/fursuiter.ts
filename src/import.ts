@@ -198,6 +198,7 @@ async function importFromConsole(ds: DataSource, openEditor: (filename: string, 
     }
     let candidateFilename = getCandidateFilename();
     // surprising behavior from prompts: enter takes default, but any key removes it. but tab allows you to edit it. almost as if the default is tab autocomplete, and the prompt starts blank. blank is default for many CLI so it makes sense, but usually the default value would be in parenthesis. autocomplete candidate should be lowlighted, which is not done here.
+    // in other words; the initial value should not be thought as a "prefill" but as a "placeholder"
     let filenameResponse = await prompts([{ name: "filename", type: "text", message: "Enter filename for character record: ", initial: candidateFilename }]);
     let filename: string = filenameResponse.filename;
     console.log(filename);
@@ -208,22 +209,24 @@ async function importFromConsole(ds: DataSource, openEditor: (filename: string, 
     let oldCharacter = await ds.loadCharacter(filename);
     let newCharacter: CharacterRecord = {};
     if (oldCharacter) {
-        let newOn = { ...on, ...oldCharacter.on };
-        let newSpecies = new Set([...species, ...oldCharacter.species]);
-        let newMaker = new Set([...maker, ...oldCharacter.maker]);
-        newCharacter = { name: character, performer, ...oldCharacter, on: { ...newOn }, maker: [...newMaker], species: [...newSpecies] };
+        let newOn = on && oldCharacter.on && { ...on, ...oldCharacter.on } || on || oldCharacter.on || undefined;
+        let newSpecies = new Set([...species, ...(oldCharacter.species || [])]);
+        let newMaker = new Set([...maker, ...(oldCharacter.maker || []) ]);
+        newCharacter = { name: character, performer, ...oldCharacter, on: (newOn && { ...newOn } || undefined), maker: [...newMaker], species: [...newSpecies], tags: oldCharacter.tags || [] };
         console.log(bold("merge with existing data"));
         console.log(newCharacter);
         let resp = await prompts([{ name: "confirm", type: "confirm", message: "write to the file system?" }]);
         if (resp.confirm) {
             ds.saveCharacter(filename, newCharacter);
             console.log(`${white(bold(filename))} saved!\n`)
+            openEditor(filename, "fursuit");
         }
     }
     else {
-        newCharacter = { ...characterRecord, on };
+        newCharacter = { ...characterRecord, on, tags: [] };
         ds.saveCharacter(filename, newCharacter);
         console.log(`${white(bold(filename))} saved!\n`)
+        openEditor(filename, "fursuit");
     }
     // TODO: check if file exists and offer to merge if appropriate
 }
