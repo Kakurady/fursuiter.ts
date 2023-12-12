@@ -148,4 +148,16 @@ export default class FileSystemDataSource implements DataSource {
             throw e;
         }
     }
+    async savePerformer(name: string, data: Performer)
+    {
+        try {
+            const s = await writeFileAsync(
+                `${this.dataPath}/performer/${name}.json`,
+                JSON.stringify(data, null, "    "),
+                { encoding: "utf8", }
+            );
+        } catch (e) {
+            throw e;
+        }
+    }
 }

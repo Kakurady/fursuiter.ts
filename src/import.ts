@@ -1,6 +1,6 @@
 import { init } from "./lib/mkpp3_core";
 import {stdin, stdout, exit} from "process";
-import { CharacterRecord, DataSource, SiteName } from "./lib/types";
+import { CharacterRecord, DataSource, Performer, SiteName } from "./lib/types";
 import {red, white, bold} from "kleur";
 
 const prompts = require("prompts");
@@ -84,9 +84,96 @@ async function importFromConsole(ds: DataSource, openEditor: (filename: string, 
     else if (performer == character) {
         performer = undefined;
     }
+    console.log({name: character, performer, maker, species, on});
+
+    let newPerformer: Performer | string = performer && {"name": performer} || undefined;
+
+    if (performer) {
+        const resp = await prompts([{ name: "confirm", type: "confirm", message: "create new performer profile?", initial: true }]);
+        if (resp.confirm) {
+            const attachResp = await prompts([{ name: "confirm", type: "confirm", message: "Attach contact info to performer?", initial: true }]);
+            const attachOnToPerformer = attachResp.confirm;
+            if (attachOnToPerformer)
+            {
+                console.log({...newPerformer, ...on});
+            }
+
+            function getPerformerFilename() {
+                const name_words = performer.toLowerCase().normalize("NFKD").replace(/(\p{Diacritic}|[\-'&\?/])/gu, "").split(" ");
+                {
+                    let entropy = zxcvbn(name_words[0]).guesses_log10;
+                    if (entropy >= 5) {
+                        // the name is pretty uncommon (one in 100,000), use it as-is
+                        return name_words[0];
+                    }
+                }
+                let name_underscore = name_words.join("_");
+                if (name_words.length > 0) {
+                    let entropy = zxcvbn(name_underscore[0]).guesses_log10;
+                    if (entropy >= 5) {
+                        return name_words[0];
+                    }
+                }
+                for (const site in on)
+                {
+                    let onsite:string = on[site] || "";
+                    let siteword =  onsite.toLowerCase().normalize("NFKD").replace(/(\p{Diacritic}|[\-'&\?/])/gu, "").replace(/ /g, "_");
+                    let entropy = zxcvbn(on[site]).guesses_log10;
+                    if (entropy >= 5) {
+                        return siteword;
+                    }
+                }
+                return name_underscore;
+            }
+            const perfCandidateFilename = getPerformerFilename();
+            let filenameResponse = await prompts([{ name: "filename", type: "text", message: "Enter filename for performer record: ", initial: perfCandidateFilename }]);
+            let perfFilename : string = filenameResponse.filename;
+            if (perfFilename)
+            {
+                const oldPerformer = await ds.loadPerformer(perfFilename);
+                
+                if (oldPerformer)
+                {
+                    let newOn: {[K in SiteName]?: string} = on && attachOnToPerformer && oldPerformer.on && { ...oldPerformer.on, ...on } || attachOnToPerformer && on || oldPerformer.on || undefined;
+                    console.log(bold("merge with existing data"));
+
+                    newPerformer.on = newOn;
+
+                    console.log(newPerformer);
+
+                    let resp = await prompts([{ name: "confirm", type: "confirm", message: "write to the file system?" }]);
+                    if (resp.confirm) {
+
+                        await ds.savePerformer(perfFilename, newPerformer);
+                        if (attachOnToPerformer) {
+                            on = undefined;
+                        }
+                        performer = perfFilename;
+                        console.log(`${white(bold(perfFilename))} saved!\n`);
+                        openEditor(perfFilename, "performer");
+                    }
+                }
+                else
+                {
+                    if (attachOnToPerformer)
+                    {
+                        newPerformer.on = on;
+                    }
+
+                    await ds.savePerformer(perfFilename, newPerformer);
+                    if (attachOnToPerformer) {
+                        on = undefined;
+                    }
+                    performer = perfFilename;
+                    console.log(`${white(bold(perfFilename))} saved!\n`);
+                    openEditor(perfFilename, "performer");
+                }
+            }
+        }
+    }
+
     let characterRecord: CharacterRecord = { name: character, performer, maker, species };
 
-    console.log({...characterRecord, on});
 
     function getCandidateFilename()
     {

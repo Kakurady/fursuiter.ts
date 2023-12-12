@@ -110,6 +110,9 @@ export interface DataSource {
     watchChanges(callback: changeCallbackFuncType): void,
 
     saveCharacter(name: string, data: CharacterRecord): Promise<void>
+
+    savePerformer(name: string, data: Performer): Promise<void>
+
 }
 
 export type Strstrobj = {
