@@ -7,7 +7,7 @@ const prompts = require("prompts");
 const zxcvbn = require("zxcvbn");
 const readline = require("node:readline/promises");
 
-async function importFromConsole(ds: DataSource) {
+async function importFromConsole(ds: DataSource, openEditor: (filename: string, type: "fursuit"| "performer" | "maker" | "event" | "species") => void) {
     // const response = await prompts({ type: 'text', name: 'value', message: 'Paste row from response spreadsheet:' });
     const rl = readline.createInterface({ input: stdin, output: stdout });
     const response: string = await rl.question("Paste row from response spreadsheet:\n");
@@ -147,7 +147,7 @@ async function main(){
         while (true)
         {
             try {
-                await importFromConsole(f.ds);
+                await importFromConsole(f.ds, f.openEditor);
             } catch (error) {
                 throw error;
             }

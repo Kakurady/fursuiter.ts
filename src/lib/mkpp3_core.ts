@@ -370,6 +370,38 @@ async function init() {
 
             }
 
+            function openEditor(filename: string, type: "fursuit"| "performer" | "maker" | "event" | "species")
+            {
+                if (!editorPath) {
+                    console.log(`"editor" not set in config`);
+                    return;
+                }
+                if (!dataPath) {
+                    console.log(`data path not set in config`);
+                    return;
+                }
+
+                let filePath = `${this.dataPath}/${type}/${filename}.json`;
+
+                const subprocess = execFile(editorPath, [...editorArguments, filePath]);
+                // drop all stdout
+                subprocess.stdout.on("data", (chunk) => { });
+                // accumulate stderr
+                let stderr = [];
+                subprocess.stderr.on("data", (chunk) => { stderr.push(chunk) });
+                subprocess.stderr.on("close", () => {
+                    if (stderr.length > 0) {
+                        console.log("editor error:", ...stderr);
+                    }
+                });
+
+                subprocess.on("exit", (code, signal) => {
+                    if (code == 0) { return; } // normal exit
+                    if (code == null) { console.log(`editor terminated by signal ${signal}`); return; }
+                    console.log(`editor exited with code ${code}`);
+                })
+            }
+
             async function newEntry(type: "maker" | "performer" | "fursuit" | "event", key: string) {
                 if (!editorPath) {
                     console.log(`"editor" not set in config`);
@@ -438,6 +470,7 @@ async function init() {
                 newCharacter,
                 newPerformer,
                 newMaker,
+                openEditor,
 
                 // maintenance
                 findAllSpeciesAndTags,
@@ -491,6 +524,7 @@ async function init() {
             performers,
             updateEntries,
             updateAllEntries,
+            openEditor: context.openEditor,
 
             // typing aids
             c: characters,
