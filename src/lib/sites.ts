@@ -73,6 +73,19 @@ const sites: { [k in SiteName]?: siteOps }
     web: {
         nameToSlug: x => x,
         toURLstr: x => x
+    },
+    youtube:
+    {
+        nameToSlug: x=>x,
+        toURLstr: function (x: string) {
+            if (x.startsWith("/")) {
+                return `https://www.youtube.com${x}`;
+            } else if (x.startsWith("@") || x.includes("/")) {
+                return `https://www.youtube.com/${x}`;
+            } else {
+                return `https://www.youtube.com/@${x}`;
+            }
+        }
     }
 };
 export { sites };
