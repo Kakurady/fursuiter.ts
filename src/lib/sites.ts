@@ -21,6 +21,11 @@ function parseMastodonAtName(input: string): string
 
 const sites: { [k in SiteName]?: siteOps }
     = {
+    // add new sites to get_url_for_desc
+    "bsky": {
+        nameToSlug: x => x.includes(".") ? x : `${x}.bsky.social`,
+        toURLstr: x => (x.endsWith(".bsky.social") ? `https://${x}/` : `https://bsky.app/profile/${x}`)
+    },
     "inkbunny": {
         nameToSlug: x => x, //fixme
         toURLstr: x => `https://inkbunny.net/${x}`

@@ -18,6 +18,7 @@ function get_url_for_desc(someone: Contactable): string | undefined {
         "tumblr",
         "youtube",
         "instagram",
+        "bsky",
         "da",
         "twitter",
         "facebook",
