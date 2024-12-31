@@ -132,14 +132,22 @@ function gen_title(options: ProfileOptions): string {
         title = options.title;
     } else {
         // FIXME: did not check characters is defined? Either check here or remove undefined from definition
-        const names = options.characters.map(x => x.name);
-        title = names.join(", ");
+        const names = options.characters.map(x => x.name).filter(x=>x);
+        let [last, ...rest] = names.reverse();
+        if (rest.length > 1) {
+            title = `${rest.reverse().join(", ")}, and ${last}`;
+        } else if (rest.length > 0) {
+            title = `${rest[0]} and ${last}`;
+        }
+        else if (last) {
+            title = last;
+        }
     }
     // Add event name to the title
     // possibilities: have characters / no characters, have event / no event
     if (options.event) {
         if (title) {
-            title = `${options.event.name} - ${title}`;
+            title = `${title} at ${options.event.name}`;
         } else {
             title = options.event.name;
         }
