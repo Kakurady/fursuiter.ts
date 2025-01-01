@@ -186,14 +186,12 @@ function gen_pp3(options: ProfileOptions) {
     var lines: string[] = [];
 
     lines.push("[Exif]");
-    lines.push("Exif.MakerNote=#delete");
     if (options.artist) {
         lines.push(`Artist=${options.artist}`);
     }
     if (options.copyright) {
         lines.push(`Copyright=${options.copyright}`);
     }
-    lines.push(`ImageDescription=#delete`);
     lines.push("");
 
     lines.push(`[IPTC]
