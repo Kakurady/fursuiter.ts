@@ -36,7 +36,7 @@ const sites: { [k in SiteName]?: siteOps }
     },
     "twitter": {
         nameToSlug: x => x.replace(/^@/, ""),
-        toURLstr: x => `https://twitter.com/${x}`
+        toURLstr: x => `https://x.com/${x}`
     },
     "da": {
         nameToSlug: x => x, //fixme
