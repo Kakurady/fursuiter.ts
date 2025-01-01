@@ -6,6 +6,7 @@ import { readFile, copyFile, constants as fsconstants } from "fs";
 import write_pp3 from "./write_pp3";
 import { promisify } from "util";
 import { execFile } from "child_process";
+import { Console } from "console";
 
 const prompts = require("prompts");
 
@@ -22,6 +23,7 @@ async function resolvePerformer(ds: DataSource, performer: string | Performer): 
 // in fact, it's better if we don't load the maker as a Contactable,
 // lest we end up with circular references.
 async function resolveMaker (ds: DataSource, maker: string | Maker | MakerRecord) : Promise<Maker|string>{
+    console.log("resolveMaker", maker);
     try {
         const loaded = (typeof maker === "string") ? await ds.loadMaker(maker) : maker;
         if (typeof loaded === "string"){
@@ -223,6 +225,7 @@ async function init() {
             async function _conv(characters: Array<characterKeyOrObject>, event_name: string, options: ProfileOptionsRecord) {
                 try {
                     const resolvedCharacters = await Promise.all(characters.map(x=>resolveCharacter(ds, x)));
+                    console.log(resolvedCharacters);
                     let event: Event;
                     if (options.event){
                         if (typeof options.event === 'string'){
@@ -381,7 +384,7 @@ async function init() {
                     return;
                 }
 
-                let filePath = `${this.dataPath}/${type}/${filename}.json`;
+                let filePath = `${dataPath}/${type}/${filename}.json`;
 
                 const subprocess = execFile(editorPath, [...editorArguments, filePath]);
                 // drop all stdout
