@@ -22,6 +22,7 @@ export type SiteName =
     "threads" |
     "tiktok" |
     "tumblr" |
+    "twitch" |
     "twitter" |
     "weasyl" |
     "web" |

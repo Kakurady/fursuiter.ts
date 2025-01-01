@@ -25,7 +25,7 @@ convAndWrite: (characters: characterKeyOrObject | Array<characterKeyOrObject>, e
     const response: string = await rl.question("Paste row from response spreadsheet:\n");
     rl.close();
     let result = response.split("\t").map(x => x.trim()).map(x=>0 == x.length? undefined: x);
-    let [timestamp, performer_s, character_s, species_s, maker_s, web, fa, instagram, telegram, tiktok, twitter, site1, link1, site2, link2, site3, link3, discord] = result;
+    let [timestamp, performer_s, character_s, species_s, maker_s, web, discord, fa, instagram, telegram, tiktok, twitter, site1, link1, site2, link2, site3, link3, ] = result;
 
     function allLowerCaseToTitleCase(x: string) {
         if (!x) return;
@@ -79,6 +79,7 @@ convAndWrite: (characters: characterKeyOrObject | Array<characterKeyOrObject>, e
             case "telegram":
             case "threads":
             case "tiktok":
+            case "twitch":
             case "tumblr":
             case "twitter":
             case "weasyl":
