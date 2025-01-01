@@ -14,8 +14,7 @@ function parseMastodonAtName(input: string): string
     if (!res){
         throw new Error("unable to parse Mastodon/Misskey username");
     }
-    const user = res[1];
-    const domain = res[2];
+    const [_, user, domain] = [...res];
     return `https://${domain}/@${user}`;
 }
 
@@ -43,7 +42,7 @@ const sites: { [k in SiteName]?: siteOps }
         toURLstr: x => `https://${x}.deviantart.com/`
     },
     "fa": {
-        nameToSlug: x => x.replace(/_/g, ""),
+        nameToSlug: x => x.replace(/_/g, "").toLowerCase(),
         toURLstr: x => `https://www.furaffinity.net/user/${x}`
     },
     mastodon: {
@@ -56,7 +55,7 @@ const sites: { [k in SiteName]?: siteOps }
     },
     tumblr: {
         nameToSlug: x => x,
-        toURLstr: x => `https://${x}.tumblr.com/`,
+        toURLstr: x => (x.startsWith("http://") || x.startsWith("https://"))? x: `https://tumblr.com/${x}`,
     },
     instagram: {
         nameToSlug: x => x,
@@ -76,7 +75,7 @@ const sites: { [k in SiteName]?: siteOps }
         toURLstr: x => `https://www.flickr.com/people/${x}/`,
     },
     web: {
-        nameToSlug: x => x,
+    nameToSlug: x => x,
         toURLstr: x => x
     },
     youtube:
