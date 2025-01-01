@@ -1,13 +1,25 @@
 import { init } from "./lib/mkpp3_core";
 import {stdin, stdout, exit} from "process";
-import { CharacterRecord, DataSource, Performer, SiteName } from "./lib/types";
+import { CharacterRecord, DataSource, Performer, ProfileOptionsRecord, SiteName } from "./lib/types";
 import {red, white, bold} from "kleur";
+
+type CharacterOptions = {
+    key?: string, 
+    id?: string, 
+    addTags?: string[],
+}
+type characterKeyOrObject = string | (CharacterRecord & CharacterOptions);
 
 const prompts = require("prompts");
 const zxcvbn = require("zxcvbn");
 const readline = require("node:readline/promises");
 
-async function importFromConsole(ds: DataSource, openEditor: (filename: string, type: "fursuit"| "performer" | "maker" | "event" | "species") => void) {
+let eventName: string;
+
+async function importFromConsole(ds: DataSource, openEditor: (filename: string, type: "fursuit"| "performer" | "maker" | "event" | "species") => void,
+    conv: (characters: characterKeyOrObject | Array<characterKeyOrObject>, event_name_or_options?: string | ProfileOptionsRecord, options?: ProfileOptionsRecord) => Promise<object>, 
+convAndWrite: (characters: characterKeyOrObject | Array<characterKeyOrObject>, event_name_or_options?: string | ProfileOptionsRecord, options?: ProfileOptionsRecord) => Promise<void>
+) {
     // const response = await prompts({ type: 'text', name: 'value', message: 'Paste row from response spreadsheet:' });
     const rl = readline.createInterface({ input: stdin, output: stdout });
     const response: string = await rl.question("Paste row from response spreadsheet:\n");
@@ -228,16 +240,32 @@ async function importFromConsole(ds: DataSource, openEditor: (filename: string, 
         console.log(`${white(bold(filename))} saved!\n`)
         openEditor(filename, "fursuit");
     }
+    let generateResp = await prompts([{ name: "confirm", type: "confirm", message: "write profile with this character?" }]);
+    if (generateResp.confirm)
+    {
+        if (!eventName)
+        {
+            ({eventName: eventName} = await prompts([{ name: "eventName", type: "text", message: "enter event key" }]));
+        }
+        let profileObj = await conv(filename, eventName);
+        console.log(JSON.stringify(profileObj, null, "    "));
+        const { confirm }: { confirm: boolean } = await prompts([{ name: "confirm", type: "confirm", message: "write to the file system?", initial: true }]);
+        if (confirm)
+        {
+            await convAndWrite(filename, eventName);
+        }
+    }
     // TODO: check if file exists and offer to merge if appropriate
 }
 
 async function main(){
+    eventName = null;
     try {
         const f = await init();
         while (true)
         {
             try {
-                await importFromConsole(f.ds, f.openEditor);
+                await importFromConsole(f.ds, f.openEditor, f.conv, f.convAndWrite);
             } catch (error) {
                 throw error;
             }
