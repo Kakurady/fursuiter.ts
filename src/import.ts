@@ -25,12 +25,22 @@ convAndWrite: (characters: characterKeyOrObject | Array<characterKeyOrObject>, e
     const response: string = await rl.question("Paste row from response spreadsheet:\n");
     rl.close();
     let result = response.split("\t").map(x => x.trim()).map(x=>0 == x.length? undefined: x);
-    let [timestamp, performer, character, species_s, maker_s, web, fa, instagram, telegram, tiktok, twitter, site1, link1, site2, link2, site3, link3, discord] = result;
+    let [timestamp, performer_s, character_s, species_s, maker_s, web, fa, instagram, telegram, tiktok, twitter, site1, link1, site2, link2, site3, link3, discord] = result;
 
+    function allLowerCaseToTitleCase(x: string) {
+        if (!x) return;
+        if (x.toLowerCase() == x) {
+            return x.split(" ").map(x => {
+                let [h, ...t] = x; return h && [h.toUpperCase(), ...t].join("") || "";
+            }).join(" ");
+        } else { return x; }
+    }
+    let performer =  allLowerCaseToTitleCase(performer_s);
+    let character = allLowerCaseToTitleCase(character_s);
     // because Gboard will capitalize the first letter in each input field, including common species such as "Fox", undo that here.
     // this will lower-case proper nouns such as "Pokémon" or "Neopet" as an unwanted effect, but let's fix that by hand afterwards.
     let species = species_s && species_s.split("\t").map(x => x.trim().toLowerCase()) || [];
-    let maker = maker_s && maker_s.split("\t").map(x => x.trim()) || [];
+    let maker = maker_s && maker_s.split("\t").map(x => allLowerCaseToTitleCase(x.trim())) || [];
     // convert write-in entries
     let [on1, on2, on3] = [[site1, link1], [site2, link2], [site3, link3]].map(x => {
         let [site, link] = x;
