@@ -26,7 +26,7 @@ function get_url_for_desc(someone: Contactable): string | undefined {
         "second_life_uuid",
     ];
     for (const site of site_list) {
-        if (someone.on[site] && !stale.has(site)) {
+        if (someone.on[site] && !stale.has(site) && sites[site]) {
             const slug = sites[site].nameToSlug(someone.on[site]);
             const url = sites[site].toURLstr(slug);
             return url;
